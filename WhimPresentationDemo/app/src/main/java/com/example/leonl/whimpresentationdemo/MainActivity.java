@@ -13,6 +13,7 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.widget.Toast;
 
 public class MainActivity extends AppCompatActivity implements Visualizer.OnDataCaptureListener {
@@ -83,6 +84,9 @@ public class MainActivity extends AppCompatActivity implements Visualizer.OnData
             // Request an OpenGL ES 2.0 compatible context.
             whimSurfaceView.setEGLContextClientVersion(2);
 
+            // Pause all the preserve EGL context
+            whimSurfaceView.setPreserveEGLContextOnPause(true);
+
             whimRenderer = new WhimRenderer(audioSampleSize);
             // Set the renderer to our demo renderer, defined below.
             whimSurfaceView.setRenderer(whimRenderer, displayMetrics.density, audioSampleSize);
@@ -91,6 +95,7 @@ public class MainActivity extends AppCompatActivity implements Visualizer.OnData
         {
             // This is where you could create an OpenGL ES 1.x compatible
             // renderer if you wanted to support both ES 1 and ES 2.
+            Log.e("OpenGLES2", "Your device doesn't support ES2. ("+configurationInfo.reqGlEsVersion+")");
             return;
         }
 
@@ -117,6 +122,15 @@ public class MainActivity extends AppCompatActivity implements Visualizer.OnData
     protected void onPause() {
         super.onPause();
         whimSurfaceView.onPause();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (mediaPlayer != null) {
+            visualizer.setEnabled(false);
+            mediaPlayer.release();
+        }
     }
 
     @Override
